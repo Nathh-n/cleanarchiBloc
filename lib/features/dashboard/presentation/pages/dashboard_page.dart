@@ -6,6 +6,9 @@ import '../../../auth/presentation/bloc/auth_bloc.dart';
 import '../../../auth/presentation/bloc/auth_event.dart';
 import '../../../auth/presentation/bloc/auth_state.dart';
 import '../../../auth/presentation/pages/login_page.dart';
+import '../../../upload/data/repositories/upload_repository_impl.dart';
+import '../../../upload/presentation/bloc/upload_bloc.dart';
+import '../../../upload/presentation/pages/upload_page.dart';
 import '../bloc/session_bloc.dart';
 import '../bloc/session_state.dart';
 
@@ -23,44 +26,47 @@ class _DashboardPageState extends State<DashboardPage> {
   Widget build(BuildContext context) {
     final tabTitles = ['Upload Gambar', 'Daftar Produk'];
 
-    return FScaffold(
-      header: FHeader(
-        title: Text(tabTitles[_currentTab]),
-        suffixes: [
-          FHeaderAction(
-            icon: const Icon(FLucideIcons.logOut),
-            semanticsTooltip: 'Logout',
-            onPress: _handleLogout,
-          ),
-        ],
-      ),
-      footer: FBottomNavigationBar(
-        index: _currentTab,
-        onChange: (index) => setState(() => _currentTab = index),
-        children: const [
-          FBottomNavigationBarItem(
-            icon: Icon(FLucideIcons.uploadCloud),
-            label: Text('Upload'),
-          ),
-          FBottomNavigationBarItem(
-            icon: Icon(FLucideIcons.list),
-            label: Text('Produk'),
-          ),
-        ],
-      ),
-      child: BlocListener<SessionBloc, SessionState>(
-        listener: (context, sessionState) {
-          if (sessionState is SessionExpired) {
-            _goToLogin();
-          }
-        },
-        child: BlocListener<AuthBloc, AuthState>(
-          listener: (context, authState) {
-            if (authState is AuthInitial) {
+    return BlocProvider<UploadBloc>(
+      create: (_) => UploadBloc(UploadRepositoryImpl()),
+      child: FScaffold(
+        header: FHeader(
+          title: Text(tabTitles[_currentTab]),
+          suffixes: [
+            FHeaderAction(
+              icon: const Icon(FLucideIcons.logOut),
+              semanticsTooltip: 'Logout',
+              onPress: _handleLogout,
+            ),
+          ],
+        ),
+        footer: FBottomNavigationBar(
+          index: _currentTab,
+          onChange: (index) => setState(() => _currentTab = index),
+          children: const [
+            FBottomNavigationBarItem(
+              icon: Icon(FLucideIcons.uploadCloud),
+              label: Text('Upload'),
+            ),
+            FBottomNavigationBarItem(
+              icon: Icon(FLucideIcons.list),
+              label: Text('Produk'),
+            ),
+          ],
+        ),
+        child: BlocListener<SessionBloc, SessionState>(
+          listener: (context, sessionState) {
+            if (sessionState is SessionExpired) {
               _goToLogin();
             }
           },
-          child: _buildTabContent(),
+          child: BlocListener<AuthBloc, AuthState>(
+            listener: (context, authState) {
+              if (authState is AuthInitial) {
+                _goToLogin();
+              }
+            },
+            child: _buildTabContent(),
+          ),
         ),
       ),
     );
@@ -69,10 +75,7 @@ class _DashboardPageState extends State<DashboardPage> {
   Widget _buildTabContent() {
     switch (_currentTab) {
       case 0:
-        return const _PlaceholderContent(
-          icon: FLucideIcons.uploadCloud,
-          message: 'Fitur upload gambar segera hadir.',
-        );
+        return const UploadPage();
       case 1:
         return const _PlaceholderContent(
           icon: FLucideIcons.list,
