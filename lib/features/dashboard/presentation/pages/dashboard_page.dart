@@ -6,6 +6,9 @@ import '../../../auth/presentation/bloc/auth_bloc.dart';
 import '../../../auth/presentation/bloc/auth_event.dart';
 import '../../../auth/presentation/bloc/auth_state.dart';
 import '../../../auth/presentation/pages/login_page.dart';
+import '../../../product_list/data/repositories/product_repository_impl.dart';
+import '../../../product_list/presentation/bloc/product_list_bloc.dart';
+import '../../../product_list/presentation/pages/product_list_page.dart';
 import '../../../upload/data/repositories/upload_repository_impl.dart';
 import '../../../upload/presentation/bloc/upload_bloc.dart';
 import '../../../upload/presentation/pages/upload_page.dart';
@@ -26,8 +29,15 @@ class _DashboardPageState extends State<DashboardPage> {
   Widget build(BuildContext context) {
     final tabTitles = ['Upload Gambar', 'Daftar Produk'];
 
-    return BlocProvider<UploadBloc>(
-      create: (_) => UploadBloc(UploadRepositoryImpl()),
+    return MultiBlocProvider(
+      providers: [
+        BlocProvider(
+          create: (_) => UploadBloc(UploadRepositoryImpl()),
+        ),
+        BlocProvider(
+          create: (_) => ProductListBloc(ProductRepositoryImpl()),
+        ),
+      ],
       child: FScaffold(
         header: FHeader(
           title: Text(tabTitles[_currentTab]),
@@ -77,10 +87,7 @@ class _DashboardPageState extends State<DashboardPage> {
       case 0:
         return const UploadPage();
       case 1:
-        return const _PlaceholderContent(
-          icon: FLucideIcons.list,
-          message: 'Fitur daftar produk segera hadir.',
-        );
+        return const ProductListPage();
       default:
         return const SizedBox.shrink();
     }
@@ -142,36 +149,6 @@ class _DashboardPageState extends State<DashboardPage> {
     Navigator.of(context).pushAndRemoveUntil(
       MaterialPageRoute(builder: (_) => const LoginPage()),
       (_) => false,
-    );
-  }
-}
-
-class _PlaceholderContent extends StatelessWidget {
-  final IconData icon;
-  final String message;
-
-  const _PlaceholderContent({
-    required this.icon,
-    required this.message,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Center(
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(icon, size: 48, color: Theme.of(context).colorScheme.outline),
-          const SizedBox(height: 12),
-          Text(
-            message,
-            textAlign: TextAlign.center,
-            style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-              color: Theme.of(context).colorScheme.onSurfaceVariant,
-            ),
-          ),
-        ],
-      ),
     );
   }
 }
